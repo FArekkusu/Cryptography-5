@@ -51,9 +51,10 @@ def login(email, password):
     try:
         cursor.execute(SELECT_BY_EMAIL, (email,))
         record = cursor.fetchone()
-
+        
+        sha512_hash = hashlib.sha512(bytes(password, encoding="utf-8")).hexdigest()
+        
         try:
-            sha512_hash = hashlib.sha512(bytes(password, encoding="utf-8")).hexdigest()
             PASSWORD_HASHER.verify(record[2], sha512_hash)
         except Exception:
             raise exceptions.InvalidCredentialsError
