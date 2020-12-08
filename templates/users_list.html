@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<head>
+    <style>
+        th, td {border: 1px solid black;}
+        table {border-collapse: collapse;}
+    </style>
+</head>
+<body>
+    <h1>Users list</h1>
+
+    <table>
+        <tr>
+            <th>Email</th>
+            <th>Biography</th>
+            <th>Encrypted biography</th>
+        </tr>
+        {% for email, biography, encrypted_biography in users_list %}
+            <tr>
+                <td>{{ email }}</td>
+                <td>{{ biography }}</td>
+                <td>{{ encrypted_biography }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>

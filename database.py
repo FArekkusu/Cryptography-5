@@ -1,13 +1,29 @@
 import sqlite3
 import exceptions
-from password_hashing import get_hash, verify_hash, needs_rehash
+import password_hashing
+import data_encryption
 
 DATABASE = "users.db"
-CREATE = "CREATE TABLE IF NOT EXISTS credentials (id INTEGER PRIMARY KEY, email TEXT, password_hash TEXT, version INTEGER);"
-DROP = "DROP TABLE IF EXISTS credentials;"
-SELECT_BY_EMAIL = "SELECT * FROM credentials WHERE email = ?;"
-INSERT_CREDENTIALS = "INSERT INTO credentials (email, password_hash, version) VALUES (?, ?, ?)"
-UPDATE_PASSWORD = "UPDATE credentials SET password_hash = ? WHERE email = ?"
+
+CREATE_USERS = """
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY,
+    email TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    data_encryption_key BLOB NOT NULL,
+    biography BLOB NOT NULL
+);
+"""
+DROP_USERS = "DROP TABLE IF EXISTS users;"
+SELECT_ALL_USERS = "SELECT * FROM users;"
+SELECT_USER_BY_EMAIL = "SELECT * FROM users WHERE email = ?;"
+INSERT_USER = """
+INSERT INTO users (email, password_hash, version, data_encryption_key, biography)
+VALUES (?, ?, ?, ?, ?);
+"""
+UPDATE_USER_PASSWORD = "UPDATE users SET password_hash = ? WHERE email = ?;"
+UPDATE_USER_BIOGRAPHY = "UPDATE users SET biography = ? WHERE email = ?;"
 
 MIN_PASSWORD_LENGTH = 16
 CURRENT_PASSWORD_VERSION = 1
@@ -17,7 +33,7 @@ def create():
     con = sqlite3.connect(DATABASE)
     cursor = con.cursor()
 
-    con.execute(CREATE)
+    con.execute(CREATE_USERS)
     con.commit()
 
     cursor.close()
@@ -28,7 +44,7 @@ def drop():
     con = sqlite3.connect(DATABASE)
     cursor = con.cursor()
 
-    con.execute(DROP)
+    con.execute(DROP_USERS)
     con.commit()
 
     cursor.close()
@@ -41,17 +57,20 @@ def register(email, password):
     if password.casefold() in (email.casefold(), email.split("@")[0].casefold()):
         raise exceptions.EmailMatchesPasswordError
 
-    hash = get_hash(password)
+    hash = password_hashing.get_hash(password)
 
     con = sqlite3.connect(DATABASE)
     cursor = con.cursor()
 
     try:
-        cursor.execute(SELECT_BY_EMAIL, (email,))
+        cursor.execute(SELECT_USER_BY_EMAIL, (email,))
         if cursor.fetchone() is not None:
             return
+        
+        dek = data_encryption.generate_dek()
+        biography = data_encryption.encrypt(dek, b"")
 
-        cursor.execute(INSERT_CREDENTIALS, (email, hash, CURRENT_PASSWORD_VERSION))
+        cursor.execute(INSERT_USER, (email, hash, CURRENT_PASSWORD_VERSION, dek, biography))
         con.commit()
     finally:
         cursor.close()
@@ -63,21 +82,58 @@ def login(email, password):
     cursor = con.cursor()
 
     try:
-        cursor.execute(SELECT_BY_EMAIL, (email,))
+        cursor.execute(SELECT_USER_BY_EMAIL, (email,))
         record = cursor.fetchone()
 
         try:
-            verify_hash(password, record[2])
+            password_hashing.verify_hash(password, record[2])
         except Exception:
             raise exceptions.InvalidCredentialsError
         
         if record[3] < CURRENT_PASSWORD_VERSION:
             raise exceptions.OutdatedPasswordVersionError
         
-        if needs_rehash(record[2]):
-            hash = get_hash(password)
-            cursor.execute(UPDATE_PASSWORD, (hash, email))
+        if password_hashing.needs_rehash(record[2]):
+            hash = password_hashing.get_hash(password)
+            cursor.execute(UPDATE_USER_PASSWORD, (hash, email))
             con.commit()
+    finally:
+        cursor.close()
+        con.close()
+
+
+def set_biography(email, password, biography):
+    con = sqlite3.connect(DATABASE)
+    cursor = con.cursor()
+
+    try:
+        cursor.execute(SELECT_USER_BY_EMAIL, (email,))
+        record = cursor.fetchone()
+
+        try:
+            password_hashing.verify_hash(password, record[2])
+        except Exception:
+            raise exceptions.InvalidCredentialsError
+        
+        encrypted_biography = data_encryption.encrypt(record[4], biography.encode())
+
+        cursor.execute(UPDATE_USER_BIOGRAPHY, (encrypted_biography, email))
+        con.commit()
+    finally:
+        cursor.close()
+        con.close()
+
+def get_users():
+    con = sqlite3.connect(DATABASE)
+    cursor = con.cursor()
+
+    try:
+        cursor.execute(SELECT_ALL_USERS)
+        users = cursor.fetchall()
+        return [
+            (record[1], data_encryption.decrypt(record[4], record[5]).decode(), record[5].decode())
+            for record in users
+        ]
     finally:
         cursor.close()
         con.close()

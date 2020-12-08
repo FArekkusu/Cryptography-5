@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request
 import database
 import exceptions
+import data_encryption
 
-app = Flask(__name__, template_folder="")
+app = Flask(__name__)
 
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def login_page():
     return render_template("login.html")
 
@@ -40,6 +41,27 @@ def login():
     return "Logged in successfully"
 
 
+@app.route("/biography", methods=["POST"])
+def biography():
+    data = request.get_json()
+    email, password, biography = data["email"], data["password"], data["biography"]
+
+    try:
+        database.set_biography(email, password, biography)
+    except exceptions.InvalidCredentialsError:
+        return "Invalid credentials"
+
+    return "Set biography successfully"
+
+
+@app.route("/users-list", methods=["GET"])
+def users_list():
+    users_list = database.get_users()
+    return render_template("users_list.html", users_list=users_list)
+
+
 if __name__ == "__main__":
+    data_encryption.create_kek()
+    database.drop()
     database.create()
     app.run(host="0.0.0.0")

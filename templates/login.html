@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<body>
+    <h1>Login page</h1>
+
+    <table>
+        <tr>
+            <td>Email:</td>
+            <td><input type="text" id="email"></td>
+        </tr>
+        <tr>
+            <td>Password:</td>
+            <td><input type="text" id="password"></td>
+        </tr>
+        <tr>
+            <td>Biography:</td>
+            <td><input type="text" id="biography"></td>
+        </tr>
+    </table>
+
+    <br>
+
+    <table>
+        <tr>
+            <td><input type="submit" value="Register" id="register-button"></td>
+            <td><input type="submit" value="Login" id="login-button"></td>
+            <td><input type="submit" value="Set biography" id="biography-button"></td>
+        </tr>
+    </table>
+
+    <script>
+        function getCredentials() {
+            return {
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value
+            };
+        }
+
+        function postData(url, data, callback) {
+            let xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = () => {if (xhr.readyState === 4) callback(xhr);};
+            xhr.open("post", url);
+            xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+            xhr.send(JSON.stringify(data));
+        }
+
+        document.getElementById("register-button").addEventListener("click", () => {
+            let data = getCredentials();
+            postData("/register", data, xhr => alert(xhr.response));
+        });
+
+        document.getElementById("login-button").addEventListener("click", () => {
+            let data = getCredentials();
+            postData("/login", data, xhr => alert(xhr.response));
+        });
+
+        document.getElementById("biography-button").addEventListener("click", () => {
+            let data = getCredentials();
+            data.biography = document.getElementById("biography").value;
+            postData("/biography", data, xhr => alert(xhr.response));
+        });
+    </script>
+</body>
