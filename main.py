@@ -35,7 +35,7 @@ def login():
     except exceptions.InvalidCredentialsError:
         return "Invalid credentials"
     except exceptions.OutdatedPasswordVersionError:
-        return "Please reset your password"
+        return "Please, reset your password"
 
     return "Logged in successfully"
 
