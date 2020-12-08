@@ -41,6 +41,5 @@ def login():
 
 
 if __name__ == "__main__":
-    database.drop()
     database.create()
     app.run(host="0.0.0.0")
