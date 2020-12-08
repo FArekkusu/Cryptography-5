@@ -3,3 +3,6 @@ class PasswordTooShortError(BaseException):
 
 class InvalidCredentialsError(BaseException):
     pass
+
+class EmailMatchesPasswordError(BaseException):
+    pass

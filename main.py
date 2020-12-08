@@ -17,6 +17,8 @@ def register():
         database.register(email, password)
     except exceptions.PasswordTooShortError:
         return "Password is too short"
+    except exceptions.EmailMatchesPasswordError:
+        return "Email address cannot be used as password"
     
     return "Activation link sent to the provided email address"
 

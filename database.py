@@ -26,6 +26,8 @@ def create():
 def register(email, password):
     if len(password) < MIN_PASSWORD_LENGTH:
         raise exceptions.PasswordTooShortError
+    if password.casefold() in (email.casefold(), email.split("@")[0].casefold()):
+        raise exceptions.EmailMatchesPasswordError
 
     sha512_hash = hashlib.sha512(bytes(password, encoding="utf-8")).hexdigest()
     argon2_hash = PASSWORD_HASHER.hash(sha512_hash)
@@ -51,9 +53,9 @@ def login(email, password):
     try:
         cursor.execute(SELECT_BY_EMAIL, (email,))
         record = cursor.fetchone()
-        
+
         sha512_hash = hashlib.sha512(bytes(password, encoding="utf-8")).hexdigest()
-        
+
         try:
             PASSWORD_HASHER.verify(record[2], sha512_hash)
         except Exception:
