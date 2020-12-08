@@ -126,6 +126,7 @@ def set_biography(email, password, biography):
         cursor.close()
         con.close()
 
+
 def get_users():
     con = sqlite3.connect(DATABASE)
     cursor = con.cursor()
