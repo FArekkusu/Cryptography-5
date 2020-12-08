@@ -11,7 +11,10 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     version INTEGER NOT NULL,
+
+    data_encryption_key_nonce BLOB NOT NULL,
     data_encryption_key BLOB NOT NULL,
+    data_nonce BLOB NOT NULL,
     biography BLOB NOT NULL
 );
 """
@@ -19,11 +22,11 @@ DROP_USERS = "DROP TABLE IF EXISTS users;"
 SELECT_ALL_USERS = "SELECT * FROM users;"
 SELECT_USER_BY_EMAIL = "SELECT * FROM users WHERE email = ?;"
 INSERT_USER = """
-INSERT INTO users (email, password_hash, version, data_encryption_key, biography)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO users (email, password_hash, version, data_encryption_key_nonce, data_encryption_key, data_nonce, biography)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 """
 UPDATE_USER_PASSWORD = "UPDATE users SET password_hash = ? WHERE email = ?;"
-UPDATE_USER_BIOGRAPHY = "UPDATE users SET biography = ? WHERE email = ?;"
+UPDATE_USER_BIOGRAPHY = "UPDATE users SET data_nonce = ?, biography = ? WHERE email = ?;"
 
 MIN_PASSWORD_LENGTH = 16
 CURRENT_PASSWORD_VERSION = 1
@@ -67,10 +70,10 @@ def register(email, password):
         if cursor.fetchone() is not None:
             return
         
-        dek = data_encryption.generate_dek()
-        biography = data_encryption.encrypt(dek, b"")
+        dek_nonce, dek = data_encryption.generate_dek()
+        data_nonce, biography = data_encryption.encrypt(dek_nonce, dek, b"")
 
-        cursor.execute(INSERT_USER, (email, hash, CURRENT_PASSWORD_VERSION, dek, biography))
+        cursor.execute(INSERT_USER, (email, hash, CURRENT_PASSWORD_VERSION, dek_nonce, dek, data_nonce, biography))
         con.commit()
     finally:
         cursor.close()
@@ -115,9 +118,9 @@ def set_biography(email, password, biography):
         except Exception:
             raise exceptions.InvalidCredentialsError
         
-        encrypted_biography = data_encryption.encrypt(record[4], biography.encode())
+        data_nonce, encrypted_biography = data_encryption.encrypt(record[4], record[5], biography.encode())
 
-        cursor.execute(UPDATE_USER_BIOGRAPHY, (encrypted_biography, email))
+        cursor.execute(UPDATE_USER_BIOGRAPHY, (data_nonce, encrypted_biography, email))
         con.commit()
     finally:
         cursor.close()
@@ -131,7 +134,7 @@ def get_users():
         cursor.execute(SELECT_ALL_USERS)
         users = cursor.fetchall()
         return [
-            (record[1], data_encryption.decrypt(record[4], record[5]).decode(), record[5].decode())
+            (record[1], data_encryption.decrypt(record[4], record[5], record[6], record[7]).decode(), record[7])
             for record in users
         ]
     finally:
