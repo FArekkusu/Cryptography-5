@@ -8,7 +8,7 @@ Instead of storing the passwords directly, they're hashed using the SHA-512 and 
 
 ## Registration
 
-When the user tries to register, the password is immediately checked to have a minimum length of 16 characters, which should be secure enough for non-sensitive data at the time of this writing. After that, it is checked that the user is not trying to use the provided email address for password - either fully, or without the domain part. If either check fails, the registration routine fails as well, and the user is presented with a correponding error message.
+When the user tries to register, the password is immediately checked to have a minimum length of 16 characters, which should be secure enough for non-sensitive data at the time of this writing. After that, it is checked that the user is not trying to use the provided email address for password - either fully, or without the domain part. If either check fails, the registration routine fails as well, and the user is presented with a corresponding error message.
 
 The password is hashed regardless of the fact whether another user with the same email already exists to prevent timing attacks. If the email address is unique, a new record is added to the database. In the end, a generic response is sent to the user saying that an activation link was sent to the provided email address (this message serves only as a confirmation that the registration routine finished successfully, there is no logic for actual email-sending implemented here) - this way a potential attacker cannot learn whether a new user was registered or not.
 
