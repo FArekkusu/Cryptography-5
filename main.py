@@ -4,9 +4,11 @@ import exceptions
 
 app = Flask(__name__, template_folder="")
 
+
 @app.route("/")
 def login_page():
     return render_template("login.html")
+
 
 @app.route("/register", methods=["POST"])
 def register():
@@ -22,6 +24,7 @@ def register():
     
     return "Activation link sent to the provided email address"
 
+
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -31,8 +34,11 @@ def login():
         database.login(email, password)
     except exceptions.InvalidCredentialsError:
         return "Invalid credentials"
+    except exceptions.OutdatedPasswordVersionError:
+        return "Please reset your password"
 
     return "Logged in successfully"
+
 
 if __name__ == "__main__":
     database.create()
