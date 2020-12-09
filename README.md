@@ -28,7 +28,7 @@ When the user tries to log in, a database record is fetched based on the provide
 
 ### Algorithm used
 
-TODO
+Data encryption and decryption is done using ChaCha20-Poly1305. The ChaCha20 stream cipher was selected because at the time of this writing it is considered to be one of the most secure cipher algorithms, on par with or better than Salsa20, which it is based on, and AES. The Poly1305 MAC is used because it provides message authenticity and integrity, it is practically as secure as the cipher it is used with, and is very efficient. Using a MAC is not required for secure data storage as the goal is to hide the data from everybody instead of making sure that the receivers can verify the data's authenticity, but it is built into the encryption function provided by the [library used for this project](https://github.com/pyca/cryptography) which is the reason it is used here.
 
 ### Data storage
 
