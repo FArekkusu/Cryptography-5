@@ -1,12 +1,16 @@
-# Cryptography-5
+# Cryptography-5-6
 
-This repository includes a simple server application showcasing secure user registration and login. Flask web framework is used as the basis for the server, for serving the login page, and processing the requests. The registration/login routines are implemented manually.
+This repository includes a simple server application showcasing:
+* secure user registration and login;
+* secure data storage.
+
+Flask web framework is used as the basis for the server, for serving HTML pages, and processing the requests. All the logic is implemented manually.
 
 ## Password storage
 
 Instead of storing the passwords directly, they're hashed using the SHA-512 and Argon2 algorithms, and the result is then saved in the database. SHA-512 is used first to "normalize" the password regardless of how long it is. Then the previously-calculated hash is passed as the input to Argon2 working in `id` mode, which is cryptographically secure, resistant to side-channel attacks, and resistant to GPU cracking attacks.
 
-Although, this is not implemented in this example, for higher security the final password hashes could be further encrypted by a secure encryption algorithm, e.g. AES-Poly1305 or XSalsa20-Poly1305. Such solution comes with a couple serious implications, though: you must store the encryption key in a secure way, inaccessible to potential attackers; losing the encryption key is equivalent to losing all the users' passwords' hashes as it would not be possible to decrypt them anymore.
+Although, this is not implemented in this example, for higher security the final password hashes could be further encrypted by a secure encryption algorithm, e.g. ChaCha20-Poly1305, XSalsa20-Poly1305, or AES-Poly1305. Such solution comes with a couple serious implications, though: you must store the encryption key in a secure way, inaccessible to potential attackers; losing the encryption key is equivalent to losing all the users' passwords' hashes as it would not be possible to decrypt them anymore.
 
 ## Registration
 
