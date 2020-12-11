@@ -53,7 +53,13 @@ This server has TLS configured to enable secure connections with HTTPS. This is 
 
 ### Generating a key and a certificate
 
-To enable TLS on the server, a key, and a certificate must be created.
+To enable TLS on the server a key and a certificate must be created.
+
+The private key is generated using the RSA algorithm with a key size of 2048 bits - at the time of this writing this is the minimum recommended key size, which is sufficient for this example, but a higher size of 4096 bits is recommended to be used instead. Before writing the key to a file it is additionaly encrypted using an automatically selected algorithm considered to be the most suitable by the maintainers of the [cryptographic library used here](https://github.com/pyca/cryptography) (the Python Cryptographic Authority) and a randomly generated 256-bits-long passphrase.
+
+A certificate which is required to enable TLS is then generated and signed by the private key. As the certificate is self-signed it has to be manually added to the list of trusted certificates which is an OS-dependant process.
+
+For simplicity the private key and the certificate are stored locally, but in the same way as the data encryption key, these files contain sensitive data, and must be stored in a secure place, e.g. a physical/virtual HSM.
 
 ### Creating an SSL context
 
