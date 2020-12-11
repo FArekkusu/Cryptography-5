@@ -48,3 +48,16 @@ When a new user registers in the system, a random key which will later be used a
 At the time of this writing there're no published attacks on ChaCha20 which means it is presumably not possible for an attacker to decrypt the data without gaining the access to the master key. In this project that is possible as the KEK is stored in a local file, and in case the attacker manages to get into the system, they might be able to access that file - whether they can actually read its contents depends on how the file permissions are configured, and whether the attacker has got root access, though. If, on the other hand, the master key was stored in an HSM, or using a KMS, the only way to access the key would be to gain physical access to the hardware where it is stored, or steal the KMS credentials and bypass all of its security measures.
 
 ## TLS configuration
+
+This server has TLS configured to enable secure connections with HTTPS. This is done in 2 steps: generating a private key with a self-signed certificate, and creating an SSL context for the server to switch to using HTTPS instead of HTTP.
+
+### Generating a key and a certificate
+
+To enable TLS on the server, a key, and a certificate must be created.
+
+### Creating an SSL context
+
+To enable HTTPS on the server an SSL context is created using the previously generated private key and certificate. This context is created using the default parameters which include but are not limited to:
+* using the latest TLS version supported both by the client and the server - this is the only way to enable TLS v1.3 which is the late and most secure version of the protocol at the time of this writing
+* forbidding SSLv2 and SSLv3 connections
+* forbidding reuse of DH and ECDH keys
