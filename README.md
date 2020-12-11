@@ -1,10 +1,11 @@
-# Cryptography-5-6
+# Cryptography-5-7
 
 This repository includes a simple server application showcasing:
 * secure user registration and login;
-* secure data storage.
+* secure data storage;
+* TLS configuration.
 
-Flask web framework is used as the basis for the server, for serving HTML pages, and processing the requests. All the logic is implemented manually.
+Flask web framework is used as the basis for the server, i.e. for serving HTML pages and processing the requests. TLS is also configured on the server directly. All the other logic is implemented manually.
 
 ## Secure user registration and login
 
@@ -45,3 +46,5 @@ When a new user registers in the system, a random key which will later be used a
 ### Possible attack vectors
 
 At the time of this writing there're no published attacks on ChaCha20 which means it is presumably not possible for an attacker to decrypt the data without gaining the access to the master key. In this project that is possible as the KEK is stored in a local file, and in case the attacker manages to get into the system, they might be able to access that file - whether they can actually read its contents depends on how the file permissions are configured, and whether the attacker has got root access, though. If, on the other hand, the master key was stored in an HSM, or using a KMS, the only way to access the key would be to gain physical access to the hardware where it is stored, or steal the KMS credentials and bypass all of its security measures.
+
+## TLS configuration
