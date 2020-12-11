@@ -1,6 +1,5 @@
 import argon2
 import hashlib
-import exceptions
 
 PASSWORD_HASHER = argon2.PasswordHasher()
 
