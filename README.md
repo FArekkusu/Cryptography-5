@@ -49,21 +49,23 @@ At the time of this writing there're no published attacks on ChaCha20 which mean
 
 ## TLS configuration
 
-This server has TLS configured to enable secure connections with HTTPS. This is done in 2 steps: generating a private key with a self-signed certificate, and creating an SSL context for the server to switch to using HTTPS instead of HTTP.
+This server has TLS configured to enable secure connections through HTTPS. This is done in 2 steps:
+* a private key with a self-signed certificate are generated;
+* an SSL context which lets the server use HTTPS instead of HTTP is created.
 
 ### Generating a key and a certificate
 
-To enable TLS on the server a key and a certificate must be created.
+A key and a certificate must be created to enable TLS on the server.
 
-The private key is generated using the RSA algorithm with a key size of 2048 bits - at the time of this writing this is the minimum recommended key size, which is sufficient for this example, but a higher size of 4096 bits is recommended to be used instead. Before writing the key to a file it is additionaly encrypted using an automatically selected algorithm considered to be the most suitable by the maintainers of the [cryptographic library used here](https://github.com/pyca/cryptography) (the Python Cryptographic Authority) and a randomly generated 256-bits-long passphrase.
+The private key is generated using the RSA algorithm with a key size of 2048 bits - at the time of this writing this is the minimum recommended key size, which is sufficient for this example, but a higher size of 4096 bits should be used for higher security. Before writing the key to a file it is additionaly encrypted using an automatically selected algorithm considered to be the most suitable by the maintainers of the [cryptographic library used here](https://github.com/pyca/cryptography), the Python Cryptographic Authority, and a randomly generated 256-bits-long passphrase.
 
 A certificate which is required to enable TLS is then generated and signed by the private key. As the certificate is self-signed it has to be manually added to the list of trusted certificates which is an OS-dependant process.
 
-For simplicity the private key and the certificate are stored locally, but in the same way as the data encryption key, these files contain sensitive data, and must be stored in a secure place, e.g. a physical/virtual HSM.
+For simplicity the private key and the certificate are stored locally, but in the same way as the data encryption key these files contain sensitive data, and must be stored in a secure place, e.g. a physical/virtual HSM.
 
 ### Creating an SSL context
 
 To enable HTTPS on the server an SSL context is created using the previously generated private key and certificate. This context is created using the default parameters which include but are not limited to:
-* using the latest TLS version supported both by the client and the server - this is the only way to enable TLS v1.3 which is the late and most secure version of the protocol at the time of this writing
-* forbidding SSLv2 and SSLv3 connections
-* forbidding reuse of DH and ECDH keys
+* using the latest TLS version supported both by the client and the server - this is the only way to enable TLS v1.3 which is the latest and the most secure version of the protocol at the time of this writing;
+* forbidding SSLv2 and SSLv3 connections;
+* forbidding reuse of DH and ECDH keys.
