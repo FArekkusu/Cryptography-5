@@ -3,11 +3,13 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 import datetime
+import secrets
 import os
 
 KEY_PATH = os.path.join("tls", "key.pem")
+PASSPHRASE_PATH = os.path.join("tls", "passphrase.bin")
 CERT_PATH = os.path.join("tls", "cert.pem")
-PASSPHRASE = b"passphrase"
+PASSPHRASE_SIZE = 32
 
 
 def generate_key():
@@ -15,6 +17,10 @@ def generate_key():
         public_exponent=65537,
         key_size=2048,
     )
+
+
+def generate_passphrase():
+    return secrets.token_bytes(PASSPHRASE_SIZE)
 
 
 def generate_certificate(key):
@@ -44,14 +50,18 @@ def create_key_cert_pair():
         os.makedirs("tls")
 
     key = generate_key()
+    passphrase = generate_passphrase()
     cert = generate_certificate(key)
 
     with open(KEY_PATH, "wb") as f:
         f.write(key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.BestAvailableEncryption(PASSPHRASE),
+            encryption_algorithm=serialization.BestAvailableEncryption(passphrase),
         ))
+
+    with open(PASSPHRASE_PATH, "wb") as f:
+        f.write(passphrase)
 
     with open(CERT_PATH, "wb") as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))

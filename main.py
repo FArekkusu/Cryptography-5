@@ -68,7 +68,10 @@ if __name__ == "__main__":
     database.drop()
     database.create()
 
+    with open(tls_config.PASSPHRASE_PATH, "rb") as f:
+        passphrase = f.read()
+
     context = ssl.SSLContext()
-    context.load_cert_chain(tls_config.CERT_PATH, tls_config.KEY_PATH, tls_config.PASSPHRASE)
+    context.load_cert_chain(tls_config.CERT_PATH, tls_config.KEY_PATH, passphrase)
 
     app.run(host="0.0.0.0", ssl_context=context)
